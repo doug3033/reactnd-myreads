@@ -3,61 +3,62 @@ import * as BooksAPI from './BooksAPI'
 import './App.css'
 import BookShelf from './BookShelf'
 import Search from './Search'
+import { Route, BrowserRouter, Link } from 'react-router-dom'
 
 class BooksApp extends React.Component {
   
   state = {
-    /**
-     * TODO: Instead of using this state variable to keep track of which page
-     * we're on, use the URL in the browser's address bar. This will ensure that
-     * users can use the browser's back and forward buttons to navigate between
-     * pages, as well as provide a good URL they can bookmark and share.
-     */
-    books: [],
-    showSearchPage: false
+    books: []
   }
 
   changeShelf = (bookId, shelf) => {
-    console.log('changing shelf: ' + bookId  + ' to shelf: ' + shelf);
+    let book = this.state.books.find((book) => book.id === bookId);
+    BooksAPI.update(book, shelf);
     this.setState({
       books: this.state.books.map(book => (book.id === bookId ? Object.assign({}, book, { shelf: shelf }) : book))
     });
   }
 
   componentDidMount() {
+    console.log("GettingAll!");
     BooksAPI.getAll().then((books) => {
+        books.forEach((book) => console.log(book.title + " " + book.id + " " + book.shelf));
         this.setState((currentState) => ({
-          books: books,
-          currentlyReading: [books[1]]
+          books: books
         }));
     })
   }
 
-  
-  
   render() {
-    return (
-      <div className="app">
-        {this.state.showSearchPage ? (
-          <div><Search booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></Search></div>
-        ) : (
+    return ( 
+      <BrowserRouter>
+        <div className="app">
+        <Route exact path='/' render={() => (
           <div className="list-books">
-            <div className="list-books-title">
-              <h1>MyReads</h1>
-            </div>
-            <div className="list-books-content">
-              <div>
-                <BookShelf shelfName="Currently Reading" shelfId="currentlyReading" booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></BookShelf>
-                <BookShelf shelfName="Want to Read" shelfId="wantToRead" booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></BookShelf>
-                <BookShelf shelfName="Read" shelfId="read" booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></BookShelf>
-              </div>
-            </div>
-            <div className="open-search">
-              <button onClick={() => this.setState({ showSearchPage: true })}>Add a book</button>
+          <div className="list-books-title">
+            <h1>MyReads</h1>
+          </div>
+          <div className="list-books-content">
+            <div>
+              <BookShelf shelfName="Currently Reading" shelfId="currentlyReading" booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></BookShelf>
+              <BookShelf shelfName="Want to Read" shelfId="wantToRead" booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></BookShelf>
+              <BookShelf shelfName="Read" shelfId="read" booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></BookShelf>
             </div>
           </div>
-        )}
-      </div>
+      
+          <div>
+            <Link className="open-search" to="/search">Add a book</Link>
+          </div>
+        </div>
+        )} />
+      <Route path='/search' render={({ history }) => (
+        <div>
+        <Search booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></Search>
+        </div>
+      )} />
+      </div>     
+    </BrowserRouter>  
+
     )
   }
 }

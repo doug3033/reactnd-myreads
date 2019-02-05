@@ -26,7 +26,8 @@ export const update = (book, shelf) =>
   fetch(`${api}/books/${book.id}`, {
     method: 'PUT',
     headers: {
-      ...headers,
+      'Accept': 'application/json',
+      'Authorization': '123',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ shelf })
