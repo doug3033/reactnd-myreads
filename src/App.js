@@ -11,21 +11,25 @@ class BooksApp extends React.Component {
     books: []
   }
 
-  changeShelf = (bookId, shelf) => {
-    let book = this.state.books.find((book) => book.id === bookId);
-    BooksAPI.update(book, shelf);
-    this.setState({
-      books: this.state.books.map(book => (book.id === bookId ? Object.assign({}, book, { shelf: shelf }) : book))
-    });
+  changeShelf = (book, shelf) => {
+    BooksAPI.update(book, shelf).then(this.refresh());
+  }
+
+  refresh() {
+    BooksAPI.getAll().then((books) => {
+      books.forEach((book) => console.log("Retrievivng: " + book.title + " " + JSON.stringify(book.authors) + " " + book.shelf));
+      this.setState((currentState) => ({
+        books: books
+      }));
+  })
   }
 
   componentDidMount() {
-    console.log("GettingAll!");
     BooksAPI.getAll().then((books) => {
-        books.forEach((book) => console.log(book.title + " " + book.id + " " + book.shelf));
-        this.setState((currentState) => ({
-          books: books
-        }));
+      books.forEach((book) => console.log("Retrievivngxx: " + book.title + " " + JSON.stringify(book.authors) + " " + book.shelf));
+      this.setState((currentState) => ({
+        books: books
+      }));
     })
   }
 
@@ -53,7 +57,7 @@ class BooksApp extends React.Component {
         )} />
       <Route path='/search' render={({ history }) => (
         <div>
-        <Search booksOnShelf={this.state.books} onChangeShelf={this.changeShelf}></Search>
+        <Search books={this.state.books} onChangeShelf={this.changeShelf}></Search>
         </div>
       )} />
       </div>     

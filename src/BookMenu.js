@@ -4,22 +4,16 @@ import './App.css';
 
 class BookMenu extends Component {
     static propTypes = {
-        bookId: PropTypes.string.isRequired,
-        shelf: PropTypes.string.isRequired,
+        book: PropTypes.object.isRequired,
         onChangeShelf: PropTypes.func.isRequired
     }
 
-    state = {
-        shelfName: ''
-    }
     
     render() {
-        const { bookId, shelf, onChangeShelf } = this.props;
-        let { shelfName } = this.state;
-        shelfName = shelf;
+        const {  book, onChangeShelf } = this.props;
         return(
             <div className="book-shelf-changer">
-                <select value={shelfName} onChange={(event) => onChangeShelf(bookId, event.target.value)}>
+                <select value={book.shelf} onChange={(event) => onChangeShelf(book, event.target.value)}>
                     <option key="move" value="move" disabled>Move to...</option>
                     <option key="currentlyReading" value="currentlyReading">Currently Reading</option>
                     <option key="wantToRead" value="wantToRead">Want to Read</option>

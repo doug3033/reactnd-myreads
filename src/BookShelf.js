@@ -39,7 +39,7 @@ class BookShelf extends Component {
                 { 
                     books.map((book) => {
                         return(<li key={book.id}>
-                        <Book key={book.title} shelf={shelfId} bookId={book.id} title={book.title} authors={book.authors} cover={book.imageLinks.thumbnail} onChangeShelf={onChangeShelf}></Book>
+                        <Book book={book} key={book.title} onChangeShelf={onChangeShelf}></Book>
                         </li>);
                     })
                 } 

@@ -1,22 +1,81 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types'
 import Book from './Book'
+import * as BooksAPI from './BooksAPI'
 import { Link } from 'react-router-dom'
 
 class Search extends Component {
     static propTypes = {
-        booksOnShelf: PropTypes.array.isRequired,
-        onChangeShelf: PropTypes.func.isRequired
+        onChangeShelf: PropTypes.func.isRequired,
+        books: PropTypes.array.isRequired
     }
 
     state = {
-        query: ""
+        query: "",
+        showingBooks: []
+    }
+
+    SEARCH_TERMS = ['Android', 'Art', 'Artificial Intelligence', 'Astronomy', 
+            'Austen', 'Baseball', 'Basketball', 'Bhagat', 'Biography', 'Brief', 'Business', 
+            'Camus', 'Cervantes', 'Christie', 'Classics', 'Comics', 'Cook', 'Cricket', 
+            'Cycling', 'Desai', 'Design', 'Development', 'Digital Marketing', 'Drama', 
+            'Drawing', 'Dumas', 'Education', 'Everything', 'Fantasy', 'Film', 'Finance', 
+            'First', 'Fitness', 'Football', 'Future', 'Games', 'Gandhi', 'Homer', 'Horror', 
+            'Hugo', 'Ibsen', 'Journey', 'Kafka', 'King', 'Lahiri', 'Larsson', 'Learn', 
+            'Literary Fiction', 'Make', 'Manage', 'Marquez', 'Money', 'Mystery', 'Negotiate', 
+            'Painting', 'Philosophy', 'Photography', 'Poetry', 'Production', 'Programming', 
+            'React', 'Redux', 'River', 'Robotics', 'Rowling', 'Satire', 'Science Fiction', 
+            'Shakespeare', 'Singh', 'Swimming', 'Tale', 'Thrun', 'Time', 'Tolstoy', 'Travel', 
+            'Ultimate', 'Virtual Reality', 'Web Development', 'iOS'];
+
+    refresh = (query) => {
+        BooksAPI.search(query).then((books) => {
+                if (books.error) {
+                    this.setState((currentState) => {
+                        return ({showingBooks: [], query: query})})
+                    return;
+                }
+                this.setState((currentState) => {
+                    let myBooks = books ? books : [];
+                    // set the default shelf and handle undefined authors.
+                    myBooks.forEach((book) => { 
+                        let bookOnShelf = this.props.books.find((bookOnShelf) => bookOnShelf.id === book.id);
+                        if (bookOnShelf) {
+                            book.shelf = bookOnShelf.shelf; 
+                        }      
+                        if (!book.shelf) {
+                            book.shelf = 'none';
+                        }
+                        if (!book.authors) {
+                            book.authors = [];
+                        }
+                    })
+                    // filter out books with no covers.
+                    myBooks = myBooks.filter((book) => book.imageLinks);
+                    return {showingBooks: myBooks, query: query}
+                }
+            )})
     }
 
     updateQuery = (query) => {
-        this.setState(() => ({
-            query: query
-        }))
+        if (query === "") {
+            this.setState((currentState) => { 
+                return ({showingBooks: [], query: query})})
+        } else { 
+            // look for search terms          
+            const queryTermFilter = this.SEARCH_TERMS.filter(
+                term=>term.toLowerCase().includes(query.trim()));
+            if (query.length > 0 && queryTermFilter.length !== 0) {
+                this.refresh(query);
+            }  
+        }
+    }
+    
+
+    onChangeSearch = (book, shelf) => {
+        BooksAPI.update(book, shelf).then(() => {
+          this.refresh(this.state.query)
+        });
     }
 
     clearQuery = () => {
@@ -25,14 +84,19 @@ class Search extends Component {
 
     render() {
         const { query } = this.state
-        const { booksOnShelf, onChangeShelf } = this.props
+        const { onChangeShelf } = this.props
+        if (this.state.query !== "") {
+            this.refresh(this.state.query);
 
-        const showingBooks = query === ''
+        }
+        
+       /*  const showingBooks = query === ''
             ? []
-            : booksOnShelf.filter((c) => (
+            :  booksOnShelf.filter((c) => (
                 c.title.toLowerCase().includes(query.toLowerCase()) || 
-                    c.authors.some((author) => (author.toLowerCase().includes(query.toLowerCase())))
-            ))
+                    c.authors.some((author) => (author.toLowerCase().includes(query.toLowerCase()))) 
+                )
+            )) */
 
         return(
             <div className="search-books">
@@ -50,9 +114,10 @@ class Search extends Component {
             <div className="search-books-results">
               <ol className="books-grid">
                 {
-                    showingBooks.map((book) => (
+                    this.state.showingBooks.map((book) => (
                         <li key={book.id}>
-                        <Book key={book.title} shelf={book.shelf} bookId={book.id} title={book.title} authors={book.authors} cover={book.imageLinks.thumbnail} onChangeShelf={onChangeShelf}></Book>
+                        {book.shelf}
+                        <Book book={book} key={book.title} onChangeShelf={onChangeShelf}></Book>
                         </li>
                     ))
                 }
