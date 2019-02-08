@@ -85,18 +85,6 @@ class Search extends Component {
     render() {
         const { query } = this.state
         const { onChangeShelf } = this.props
-        if (this.state.query !== "") {
-            this.refresh(this.state.query);
-
-        }
-        
-       /*  const showingBooks = query === ''
-            ? []
-            :  booksOnShelf.filter((c) => (
-                c.title.toLowerCase().includes(query.toLowerCase()) || 
-                    c.authors.some((author) => (author.toLowerCase().includes(query.toLowerCase()))) 
-                )
-            )) */
 
         return(
             <div className="search-books">
